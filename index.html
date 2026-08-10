@@ -950,9 +950,6 @@
 
         window.currentBuyerSearchItems = [];
         window.currentBuyerSearchImgData = {};
-
-        window.currentBuyerSearchItems = [];
-        window.currentBuyerSearchImgData = {};
         async function doBuyerSearch() {
             let key = document.getElementById('queryKeyInput').value.trim();
             let cn = document.getElementById('queryCnInput').value.trim().toLowerCase();
@@ -978,7 +975,7 @@
             filterSelect.innerHTML = '<option value="all">全部团期</option>' + buyerBatches.map(b => `<option value="${b}">${b}</option>`).join('');
             window.renderBuyerSearchPage(0);
         }
-        
+
         window.renderBuyerSearchPage = function(pageIndex) {
             const listDiv = document.getElementById('buyerList'); 
             listDiv.innerHTML = ''; 
@@ -988,6 +985,7 @@
             if (selectedBatch !== 'all') {
                 filteredItems = window.currentBuyerSearchItems.filter(item => item.batch === selectedBatch);
             }
+
             // 🎯 深度聚合数据：合并同款
             let aggregatedData = []; let aggMap = {}; let totalCount = 0; let globalGrouped = {}; 
             
@@ -1008,12 +1006,14 @@
                 if(item.paidStatus === '已交') globalGrouped[item.cn].paid += money;
                 else globalGrouped[item.cn].unpaid += money;
             }); 
+
             // 🎯 智能排序：按 团期 -> 分类 -> 款式 聚拢
             aggregatedData.sort((a, b) => {
                 if(a.batch !== b.batch) return (a.batch || '').localeCompare(b.batch || '');
                 if(a.category !== b.category) return (a.category || '').localeCompare(b.category || '');
                 return (a.character || '').localeCompare(b.character || '');
             });
+
             let cnInput = document.getElementById('queryCnInput').value.trim().toLowerCase();
             let matchedNames = Object.keys(globalGrouped); 
             let nameStr = matchedNames.length > 1 ? `包含 "${cnInput}" 的代排匹配` : (matchedNames[0] || cnInput); 
@@ -1026,6 +1026,7 @@
                 if(!cnGroupedData[item.cn]) cnGroupedData[item.cn] = [];
                 cnGroupedData[item.cn].push(item);
             });
+
             let cnList = Object.keys(cnGroupedData).sort();
             let cnPageSize = 5; 
             let totalPages = Math.ceil(cnList.length / cnPageSize);
@@ -1034,6 +1035,7 @@
             if (pageIndex >= totalPages && totalPages > 0) pageIndex = totalPages - 1;
             
             let pageCns = cnList.slice(pageIndex * cnPageSize, (pageIndex + 1) * cnPageSize);
+
             pageCns.forEach(buyerCn => {
                 let cnGlobal = globalGrouped[buyerCn];
                 let currentCnItems = cnGroupedData[buyerCn]; 
@@ -1051,10 +1053,13 @@
                             <div class="border-l border-gray-100"><span class="block text-gray-500 mb-0.5">未交款</span><span class="font-bold ${cnGlobal.unpaid > 0 ? 'text-red-500' : 'text-gray-400'} text-sm">¥${cnGlobal.unpaid.toFixed(2)}</span></div>
                         </div>
                     </div>`; 
+
                 let itemsContainer = document.createElement('div'); 
                 itemsContainer.className = "p-3 space-y-4 bg-gray-50"; 
+
                 let batchGroups = {}; 
                 currentCnItems.forEach(i => { if(!batchGroups[i.batch]) batchGroups[i.batch] = []; batchGroups[i.batch].push(i); });
+
                 for (let batchName in batchGroups) {
                     let batchDiv = document.createElement('div'); batchDiv.className = "space-y-2";
                     batchDiv.innerHTML = `<div class="text-sm font-bold text-gray-700 border-l-4 border-blue-400 pl-2 bg-white rounded shadow-sm py-1.5 px-2 mb-2">${batchName}</div>`;
@@ -1084,6 +1089,7 @@
                 groupDiv.appendChild(itemsContainer); 
                 listDiv.appendChild(groupDiv); 
             });
+
             if (totalPages > 1) {
                 let paginationDiv = document.createElement('div');
                 paginationDiv.className = "mt-4 flex justify-between items-center text-sm bg-white p-3 rounded-lg shadow-sm border border-gray-200";
@@ -1095,6 +1101,7 @@
                 listDiv.appendChild(paginationDiv);
             }
         };
+
 
         function updateBatchDatalist() {
             const datalist = document.getElementById('batchOptions'); datalist.innerHTML = '';
@@ -2053,6 +2060,7 @@
             let requestedItemIds = new Set(); 
             myReqs.forEach(r => r.items.forEach(id => requestedItemIds.add(id)));
             let finalItems = myItems.filter(i => !requestedItemIds.has(i.id));
+
             // 🎯 核心逻辑：强力智能聚拢排序
             finalItems.sort((a, b) => {
                 let locA = a.location || '默认未分配仓库';
@@ -2205,6 +2213,7 @@
             let totalPages = Math.ceil(totalItems / pageSize);
             if(pageIndex < 0) pageIndex = 0;
             if(pageIndex >= totalPages) pageIndex = totalPages - 1;
+
             window.currentShipPageIndex = pageIndex; 
             
             let pageItems = currentShipData.items.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
@@ -2215,6 +2224,7 @@
                 if(!locGroups[loc]) locGroups[loc] = [];
                 locGroups[loc].push(item);
             });
+
             for(let loc in locGroups) {
                 // 保持原皮的清爽 UI 风格
                 let locHtml = `<div class="mb-5 bg-gray-50 rounded border border-gray-200 overflow-hidden shadow-sm">
@@ -2236,6 +2246,7 @@
                     
                     let isChecked = window.currentShipSelectedIds.has(item.id) ? 'checked' : '';
                     let activeBg = isChecked ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200';
+
                     locHtml += `<label class="flex items-center gap-3 p-2 md:p-3 ${activeBg} border rounded cursor-pointer hover:bg-blue-50 transition relative overflow-hidden">
                         <input type="checkbox" class="ship-item-cb w-4 h-4 text-blue-500 border-gray-300 rounded flex-shrink-0" value="${item.id}" data-loc="${loc}" onchange="updateShipSelection(this); renderShipItemsPage(${pageIndex})" ${isChecked}>
                         ${imgHTML}
