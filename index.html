@@ -54,7 +54,7 @@
       <!-- 2. 谷子名称 -->
       <div>
         <label class="block text-zinc-400 font-medium mb-1">谷子名称 *</label>
-        <input type="text" id="title" required placeholder="如：保持安静亚克力贴、干员棋子第一弹" 
+        <input type="text" id="title" required placeholder="如：保持安静亚克力贴、干员棋子第一弹 (陈)" 
                class="w-full bg-[#181922] border border-zinc-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-400 text-xs sm:text-sm">
       </div>
 
@@ -94,7 +94,26 @@
         </div>
       </div>
 
-      <!-- 5. 涉及干员 -->
+      <!-- 5. 【新增】官方价格 / 定价规则 -->
+      <div>
+        <label class="block text-zinc-400 font-medium mb-1 flex items-center justify-between">
+          <span>官方发售价格 / 兑换规则</span>
+          <span class="text-[10px] text-zinc-500 font-mono">支持文字或金额</span>
+        </label>
+        <input type="text" id="price" placeholder="如：¥79、赠品(任意单即赠)、全套限定特典、展会免费派发" 
+               class="w-full bg-[#181922] border border-zinc-700 rounded-lg p-2 text-amber-300 font-medium focus:outline-none focus:border-cyan-400">
+        <div class="flex gap-1.5 mt-1.5 flex-wrap">
+          <span class="text-[10px] text-zinc-600 self-center">快捷填入:</span>
+          <button type="button" onclick="setVal('price', '任意单即赠')" class="btn-chip text-[10px]">普赠特典</button>
+          <button type="button" onclick="setVal('price', '全套购买特典(非单售)')" class="btn-chip text-[10px]">全套特典</button>
+          <button type="button" onclick="setVal('price', '¥58')" class="btn-chip text-[10px]">¥58</button>
+          <button type="button" onclick="setVal('price', '¥79')" class="btn-chip text-[10px]">¥79</button>
+          <button type="button" onclick="setVal('price', '¥129')" class="btn-chip text-[10px]">¥129</button>
+          <button type="button" onclick="setVal('price', '展会免费派发')" class="btn-chip text-[10px]">展会派发</button>
+        </div>
+      </div>
+
+      <!-- 6. 涉及干员 -->
       <div>
         <label class="block text-zinc-400 font-medium mb-1">涉及干员 (多位用逗号分隔)</label>
         <input type="text" id="operators" placeholder="如：白面鸮, 陈, 阿米娅" 
@@ -110,7 +129,7 @@
         </div>
       </div>
 
-      <!-- 6. 规格与获取途径 -->
+      <!-- 7. 规格与获取途径 -->
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-zinc-400 font-medium mb-1">材质 / 规格</label>
@@ -118,13 +137,13 @@
                  class="w-full bg-[#181922] border border-zinc-700 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-cyan-400">
         </div>
         <div>
-          <label class="block text-zinc-400 font-medium mb-1">获取途径 / 规则</label>
-          <input type="text" id="obtain_type" placeholder="如：官方淘宝通贩、开市满赠特典" 
+          <label class="block text-zinc-400 font-medium mb-1">获取途径 / 渠道</label>
+          <input type="text" id="obtain_type" placeholder="如：官方淘宝预售、CP21现场" 
                  class="w-full bg-[#181922] border border-zinc-700 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-cyan-400">
         </div>
       </div>
 
-      <!-- 7. 特典标记与考据备注 -->
+      <!-- 8. 特典标记与考据备注 -->
       <div class="flex items-center gap-2 pt-1">
         <input type="checkbox" id="is_limited" class="w-4 h-4 rounded bg-[#181922] border-zinc-700 text-cyan-400">
         <label for="is_limited" class="text-zinc-300">属于非单售/限定/绝版特典</label>
@@ -145,7 +164,6 @@
   </div>
 
   <script>
-    // 已填入你的真实凭据
     const SUPABASE_URL = 'https://ybheoetxyihxiwtjtrql.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InliaGVvZXR4eWloeGl3dGp0cnFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNDk0OTcsImV4cCI6MjEwNzgyNTQ5N30.1W9VSg1KX8ucwBeeimCpCtsOjBzcVxxtTtroeEl1i50';
     const IMGBB_API_KEY = 'f134ab35c1ff2009ff341ad408dcf4b5';
@@ -222,6 +240,7 @@
         category: document.getElementById('category').value,
         release_date: releaseDate,
         year: parsedYear,
+        price: document.getElementById('price').value.trim() || '未标明',
         operators: operators,
         material: document.getElementById('material').value.trim(),
         obtain_type: document.getElementById('obtain_type').value.trim(),
@@ -246,6 +265,7 @@
       } else {
         alert(`🎉 录入成功！[${payload.title}] 已归档入库。`);
         document.getElementById('title').value = '';
+        document.getElementById('price').value = '';
         document.getElementById('operators').value = '';
         previewBox.classList.add('hidden');
         coverUrlInput.value = '';
