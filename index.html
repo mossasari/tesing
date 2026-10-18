@@ -77,15 +77,15 @@
         <div>
           <label class="block text-zinc-400 font-medium mb-1">制品分类 *</label>
           <select id="category" required class="w-full bg-[#181922] border border-zinc-700 rounded-lg p-2 text-zinc-200 focus:outline-none focus:border-cyan-400">
-            <option value="徽章/贴纸">徽章 / 贴纸</option>
+            <option value="徽章">徽章</option>
+            <option value="贴纸">贴纸</option>
             <option value="挂件">挂件</option>
             <option value="手办">手办</option>
             <option value="立牌">立牌</option>
-            <option value="明信片">明信片</option>
             <option value="色纸">色纸</option>
+            <option value="明信片">明信片</option>
             <option value="毛绒">毛绒玩偶</option>
             <option value="生活">生活周边</option>
-            <option value="特典">特典</option>
             <option value="虚拟兑换">游戏内虚拟道具</option>
           </select>
         </div>
@@ -108,11 +108,11 @@
         <div class="flex gap-1.5 mt-1.5 flex-wrap">
           <span class="text-[10px] text-zinc-600 self-center">快捷填入:</span>
           <button type="button" onclick="setVal('price', '任意单即赠')" class="btn-chip text-[10px]">普赠特典</button>
-          <button type="button" onclick="setVal('price', '全套购买特典(非单售)')" class="btn-chip text-[10px]">全套特典</button>
-          <button type="button" onclick="setVal('price', '¥58')" class="btn-chip text-[10px]">¥58</button>
-          <button type="button" onclick="setVal('price', '¥79')" class="btn-chip text-[10px]">¥79</button>
-          <button type="button" onclick="setVal('price', '¥129')" class="btn-chip text-[10px]">¥129</button>
-          <button type="button" onclick="setVal('price', '展会免费派发')" class="btn-chip text-[10px]">展会派发</button>
+          <button type="button" onclick="setVal('price', '满金额赠品')" class="btn-chip text-[10px]">满赠特典</button>
+          <button type="button" onclick="setVal('price', '20')" class="btn-chip text-[10px]">20</button>
+          <button type="button" onclick="setVal('price', '24')" class="btn-chip text-[10px]">24</button>
+          <button type="button" onclick="setVal('price', '32')" class="btn-chip text-[10px]">32</button>
+          <button type="button" onclick="setVal('price', '展会活动奖励')" class="btn-chip text-[10px]">展会活动</button>
         </div>
       </div>
 
@@ -125,10 +125,10 @@
           <span class="text-[10px] text-zinc-600 self-center">常用干员:</span>
           <button type="button" onclick="appendOp('阿米娅')" class="btn-chip text-[10px]">+阿米娅</button>
           <button type="button" onclick="appendOp('陈')" class="btn-chip text-[10px]">+陈</button>
-          <button type="button" onclick="appendOp('白面鸮')" class="btn-chip text-[10px]">+白面鸮</button>
+          <button type="button" onclick="appendOp('凯尔希')" class="btn-chip text-[10px]">+凯尔希</button>
           <button type="button" onclick="appendOp('银灰')" class="btn-chip text-[10px]">+银灰</button>
           <button type="button" onclick="appendOp('能天使')" class="btn-chip text-[10px]">+能天使</button>
-          <button type="button" onclick="appendOp('凯尔希')" class="btn-chip text-[10px]">+朝陇山兔</button>
+          <button type="button" onclick="appendOp('德克萨斯')" class="btn-chip text-[10px]">+德克萨斯</button>
         </div>
       </div>
 
