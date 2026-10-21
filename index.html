@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
   <title>朝陇山谷子档案录入与管理工作台</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,26 +24,18 @@
       font-size: 11px;
       background-color: #f3f4f6;
       color: #374151;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 5px 10px;
+      border-radius: 7px;
       border: 1px solid #d1d5db;
       transition: all 0.15s ease;
       font-weight: 500;
       white-space: nowrap;
-    }
-    .btn-chip:hover {
-      background-color: #e0f2fe;
-      color: #0369a1;
-      border-color: #38bdf8;
-    }
-    .btn-chip.active {
-      background-color: #0284c7;
-      color: #ffffff;
-      border-color: #0284c7;
-      font-weight: bold;
+      user-select: none;
     }
     .btn-chip:active {
-      transform: scale(0.95);
+      background-color: #0284c7;
+      color: #ffffff;
+      transform: scale(0.96);
     }
     
     .ref-card {
@@ -51,85 +43,104 @@
       border: 1px solid #e5e7eb;
       transition: all 0.15s ease-out;
     }
-    .ref-card:hover {
-      border-color: #0284c7;
-      box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.12);
-      transform: translateX(-2px);
+    .ref-card:active {
+      transform: scale(0.99);
+      background: #f0f9ff;
     }
     .ref-card.active {
       border-color: #0284c7;
       background: #f0f9ff;
     }
+
+    /* 防止 iOS 输入框小于 16px 时自动放大页面 */
+    @media (max-width: 640px) {
+      input[type="text"], input[type="date"], select, textarea {
+        font-size: 14px !important;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+<body class="min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white pb-6 sm:pb-12">
 
   <!-- 顶部标题栏 -->
-  <header class="bg-white border-b border-gray-200 px-4 sm:px-8 py-3.5 sticky top-0 z-30 shadow-xs">
+  <header class="bg-white border-b border-gray-200 px-3.5 sm:px-8 py-2.5 sm:py-3.5 sticky top-0 z-30 shadow-xs">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 bg-sky-600 text-white font-black flex items-center justify-center rounded-lg text-sm tracking-tighter shadow-md">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-sky-600 text-white font-black flex items-center justify-center rounded-lg text-xs sm:text-sm tracking-tighter shadow-md shrink-0">
           CLS
         </div>
         <div>
-          <h1 class="text-sm sm:text-base font-bold text-gray-900 tracking-wide flex items-center gap-2">
-            朝陇山周边图鉴 · 档案录入工作台
+          <h1 class="text-xs sm:text-base font-bold text-gray-900 tracking-wide flex items-center gap-2">
+            朝陇山周边图鉴 · 档案工作台
           </h1>
-          <p class="text-xs text-gray-500">左侧主录入 · 右侧全库历史速查对照</p>
+          <p class="hidden sm:block text-xs text-gray-500">左侧主录入 · 右侧全库历史速查对照</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2.5">
-        <a href="index.html" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors font-semibold">
-          <i data-lucide="external-link" class="w-3.5 h-3.5 text-sky-600"></i> 查看前台
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 px-2.5 sm:px-3.5 py-1.5 rounded-lg flex items-center gap-1 transition-colors font-semibold">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 text-sky-600"></i> 前台
         </a>
       </div>
     </div>
   </header>
 
+  <!-- 🌟 移动端专属双Tab切换栏 (PC端自动隐藏) -->
+  <div class="lg:hidden max-w-7xl w-full mx-auto px-3 pt-3">
+    <div class="grid grid-cols-2 bg-gray-200 p-1 rounded-xl text-xs font-bold text-center">
+      <button type="button" id="tab-btn-form" onclick="switchMobileView('form')" class="py-2 rounded-lg bg-white text-sky-700 shadow-xs transition-all flex items-center justify-center gap-1.5">
+        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> 录入与编辑
+      </button>
+      <button type="button" id="tab-btn-ref" onclick="switchMobileView('ref')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center justify-center gap-1.5">
+        <i data-lucide="library" class="w-3.5 h-3.5"></i> 历史速查 (<span id="mobile-ref-count">0</span>)
+      </button>
+    </div>
+  </div>
+
   <!-- 双栏核心工作区 -->
-  <div class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1 flex flex-col lg:flex-row gap-6 items-start">
+  <div class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1 flex flex-col lg:flex-row gap-5 items-start">
     
     <!-- ================= 左侧栏：主录入与补图编辑工作台 ================= -->
-    <main class="w-full lg:w-7/12 bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-xs flex flex-col gap-5">
+    <main id="section-form" class="w-full lg:w-7/12 bg-white border border-gray-200 rounded-2xl p-4 sm:p-7 shadow-xs flex flex-col gap-4 sm:gap-5">
       
-      <div class="flex items-center justify-between pb-3.5 border-b border-gray-100">
-        <div class="flex items-center gap-2">
-          <span id="form-mode-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-sky-600 text-white tracking-wide">
+      <!-- 模式指示条 (移动端响应式换行对齐) -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-gray-100 gap-2">
+        <div class="flex items-center gap-2 flex-wrap min-w-0">
+          <span id="form-mode-badge" class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-sky-600 text-white tracking-wide shrink-0">
             模式: 录入新周边
           </span>
-          <span id="current-editing-hint" class="text-xs text-gray-600 font-medium truncate max-w-[240px]"></span>
+          <span id="current-editing-hint" class="text-xs text-gray-700 font-semibold truncate max-w-[200px] sm:max-w-[260px]"></span>
         </div>
 
-        <button type="button" onclick="switchToCreateMode()" id="btn-cancel-edit" class="hidden text-xs text-rose-600 hover:underline flex items-center gap-1 font-semibold">
+        <button type="button" onclick="switchToCreateMode()" id="btn-cancel-edit" class="hidden text-xs text-rose-600 active:text-rose-700 flex items-center gap-1 font-bold self-start sm:self-auto py-0.5">
           <i data-lucide="x-circle" class="w-4 h-4"></i> 取消编辑，新建录入
         </button>
       </div>
 
       <form id="entry-form" class="space-y-4 text-xs">
 
-        <!-- 1. 周边实物图区 -->
+        <!-- 🌟 1. 周边实物图区 (移动端横向紧凑滑屏排版，绝不再霸屏) -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
-            <label class="block text-gray-700 font-bold">周边实物图 (首张为主封面，支持设置单品Tag)</label>
+            <label class="block text-gray-800 font-bold">周边实物图</label>
             <span id="upload-count-badge" class="text-[11px] text-sky-600 font-bold font-mono">当前共 0 张图</span>
           </div>
           
-          <label class="border-2 border-dashed border-gray-300 hover:border-sky-500 rounded-xl p-3.5 text-center bg-gray-50 transition-colors flex items-center justify-center gap-2 Antigravity-pointer block mb-2">
-            <i data-lucide="upload-cloud" class="w-5 h-5 text-sky-600"></i>
-            <span id="upload-hint" class="text-gray-600 font-medium">点击拍照或上传图片 (自动传至 ImgBB，支持多选)</span>
+          <label class="border-2 border-dashed border-gray-300 hover:border-sky-500 rounded-xl p-3 text-center bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer block mb-2">
+            <i data-lucide="upload-cloud" class="w-5 h-5 text-sky-600 shrink-0"></i>
+            <span id="upload-hint" class="text-gray-600 font-medium text-xs">拍照或选图 (传至 ImgBB，支持多选)</span>
             <input type="file" id="image-file" accept="image/*" multiple class="hidden">
           </label>
 
-          <!-- 图片预览网格 -->
-          <div id="preview-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-2.5 bg-gray-50 rounded-xl border border-gray-200"></div>
+          <!-- 🌟 移动端：横向平滑滚动条 / PC端：3列表格 -->
+          <div id="preview-grid" class="hidden flex sm:grid sm:grid-cols-3 gap-2.5 p-2 bg-gray-50 rounded-xl border border-gray-200 overflow-x-auto no-scrollbar snap-x"></div>
         </div>
 
-        <!-- 2. 谷子名称与分类 -->
-        <div class="grid grid-cols-3 gap-3">
-          <div class="col-span-2">
+        <!-- 2. 谷子名称与分类 (移动端栅格优化) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
             <label class="block text-gray-700 font-bold mb-1">谷子全称 *</label>
-            <input type="text" id="title" required placeholder="如：干员棋子第一弹 (陈)、保持安静亚克力贴" 
+            <input type="text" id="title" required placeholder="如：干员棋子第一弹 (陈)、亚克力打卡棒" 
                    class="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-sky-500 text-sm font-medium">
           </div>
           <div>
@@ -150,39 +161,36 @@
         </div>
 
         <!-- 3. 系列周边归属 -->
-        <div class="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200 space-y-2">
+        <div class="p-3 sm:p-3.5 bg-sky-50/60 rounded-xl border border-sky-200 space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
               <i data-lucide="layers" class="w-4 h-4 text-sky-600"></i> 系列周边归属 (长线产品线)
             </span>
-            <span class="text-[11px] text-sky-700">点击下方芯片一键选择</span>
+            <span class="text-[10px] sm:text-[11px] text-sky-700">不选默认独立单品</span>
           </div>
 
-          <input type="text" id="series_line" value="独立单品" placeholder="如：通行认证系列、人事部简历系列" 
-                 class="w-full bg-white border border-sky-300 rounded-lg p-2 text-sky-900 font-semibold outline-none focus:border-sky-600">
-          
-          <div class="flex gap-1.5 pt-1 flex-wrap" id="series-line-chips">
-            <button type="button" onclick="setSeriesLineVal('独立单品')" class="btn-chip active">独立单品/无特定系列</button>
-            <button type="button" onclick="setSeriesLineVal('通行认证系列')" class="btn-chip">通行认证系列</button>
-            <button type="button" onclick="setSeriesLineVal('人事部简历系列')" class="btn-chip">人事部简历系列</button>
-            <button type="button" onclick="setSeriesLineVal('风尚速递系列')" class="btn-chip">风尚速递系列</button>
-            <button type="button" onclick="setSeriesLineVal('角色徽章系列')" class="btn-chip">角色徽章/吧唧系列</button>
-            <button type="button" onclick="setSeriesLineVal('贴纸包系列')" class="btn-chip">贴纸包系列</button>
-            <button type="button" onclick="setSeriesLineVal('干员棋子系列')" class="btn-chip">干员棋子系列</button>
+          <div class="space-y-2">
+            <select id="series_line_select" onchange="handleSeriesSelectChange(this.value)" class="w-full bg-white border border-sky-300 rounded-lg p-2.5 text-sky-900 font-semibold outline-none focus:border-sky-600">
+              <option value="独立单品">独立单品</option>
+              <option value="__NEW__">+ 录入新系列名称...</option>
+            </select>
+            
+            <input type="text" id="series_line_custom" placeholder="输入新的长线系列名称 (如: 人事部简历系列)" 
+                   class="hidden w-full bg-white border border-sky-400 rounded-lg p-2 text-sky-900 font-semibold outline-none focus:ring-2 focus:ring-sky-200">
           </div>
         </div>
 
         <!-- 4. 首发记录 -->
-        <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+        <div class="p-3 sm:p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
           <div class="text-xs font-bold text-gray-800 flex items-center justify-between">
             <span>🌟 首发记录 (最初上新档期)</span>
             <span class="text-[11px] text-gray-400">初版信息</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div>
               <label class="block text-gray-600 mb-1">首发所属企划/档期 *</label>
-              <input type="text" id="series" required placeholder="如：朝陇山开市特惠、火蓝之心、恒远津梁" 
+              <input type="text" id="series" required placeholder="如：朝陇山开市特惠、火蓝之心" 
                      class="w-full bg-white border border-gray-300 rounded-lg p-2 text-gray-900 outline-none focus:border-sky-500">
             </div>
             <div>
@@ -192,28 +200,28 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
               <label class="block text-gray-600 mb-1">首发官方原价</label>
-              <input type="text" id="price" placeholder="如：30、任意单即赠" 
+              <input type="text" id="price" placeholder="如：30、赠品" 
                      class="w-full bg-white border border-gray-300 rounded-lg p-2 text-amber-600 font-bold outline-none focus:border-sky-500">
             </div>
             <div>
               <label class="block text-gray-600 mb-1">首发渠道</label>
-              <input type="text" id="obtain_type" value="线上购入" placeholder="如：线上购入、展会现场" 
+              <input type="text" id="obtain_type" value="线上购入" placeholder="如：线上通贩" 
                      class="w-full bg-white border border-gray-300 rounded-lg p-2 text-gray-900 outline-none focus:border-sky-500">
             </div>
           </div>
         </div>
 
         <!-- 5. 历次复刻 / 再版历史 -->
-        <div class="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200 space-y-3">
+        <div class="p-3 sm:p-3.5 bg-amber-50/50 rounded-xl border border-amber-200 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-              <i data-lucide="history" class="w-4 h-4 text-amber-600"></i> 历次复刻 / 再版履历 (涨价/转线下/活动再版)
+              <i data-lucide="history" class="w-4 h-4 text-amber-600"></i> 历次复刻/再版履历
             </span>
             <button type="button" onclick="window.addReprintRow()" class="text-xs px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1 font-semibold transition shadow-xs">
-              <i data-lucide="plus" class="w-3 h-3"></i> 添加入库复刻
+              <i data-lucide="plus" class="w-3 h-3"></i> 加复刻
             </button>
           </div>
 
@@ -226,17 +234,16 @@
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block text-gray-700 font-bold">材质 / 规格</label>
-            <span class="text-[10px] text-gray-400">点击下方快捷填入</span>
+            <span class="text-[10px] text-gray-400">点击快捷填入</span>
           </div>
           <input type="text" id="material" placeholder="如：亚克力、马口铁、PVC、纸" 
                  class="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-sky-500">
-          <div class="flex gap-1.5 mt-2 flex-wrap">
+          <div class="flex gap-1.5 mt-2 overflow-x-auto no-scrollbar py-0.5">
             <button type="button" onclick="setVal('material', '亚克力')" class="btn-chip">亚克力</button>
             <button type="button" onclick="setVal('material', '马口铁')" class="btn-chip">马口铁</button>
             <button type="button" onclick="setVal('material', 'PVC')" class="btn-chip font-mono">PVC</button>
             <button type="button" onclick="setVal('material', '纸')" class="btn-chip">纸质</button>
             <button type="button" onclick="setVal('material', '金属合金')" class="btn-chip">金属合金</button>
-            <button type="button" onclick="setVal('material', '毛绒')" class="btn-chip">毛绒</button>
             <button type="button" onclick="setVal('material', '双闪马口铁')" class="btn-chip text-amber-700 border-amber-300">双闪马口铁</button>
           </div>
         </div>
@@ -246,7 +253,7 @@
           <label class="block text-gray-700 font-bold mb-1">涉及干员 (多位用逗号分隔)</label>
           <input type="text" id="operators" oninput="syncOpListToImageTags()" placeholder="如：凯尔希, 陈, 阿米娅" 
                  class="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-sky-500 font-medium">
-          <div class="flex gap-1.5 mt-2 flex-wrap">
+          <div class="flex gap-1.5 mt-2 overflow-x-auto no-scrollbar py-0.5">
             <button type="button" onclick="appendOp('阿米娅')" class="btn-chip">+阿米娅</button>
             <button type="button" onclick="appendOp('陈')" class="btn-chip">+陈</button>
             <button type="button" onclick="appendOp('凯尔希')" class="btn-chip">+凯尔希</button>
@@ -256,16 +263,16 @@
           </div>
         </div>
 
-        <!-- 8. 特典标记与考据备注 -->
+        <!-- 8. 特典与备注 -->
         <div class="flex items-center gap-2 pt-1">
           <input type="checkbox" id="is_limited" class="w-4 h-4 rounded text-sky-600 focus:ring-0">
-          <label for="is_limited" class="text-gray-700 Antigravity-pointer font-medium">属于首发限定/绝版特典/非单售</label>
+          <label for="is_limited" class="text-gray-700 font-medium">属于首发限定/绝版特典/非单售</label>
         </div>
 
         <div>
-          <label class="block text-gray-700 font-bold mb-1">历史背景 / 考据笔记 / 补充说明</label>
-          <textarea id="note" rows="2" placeholder="如：2019开市特惠赠品，附赠游戏家具码..." 
-                    class="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-gray-900 focus:outline-none focus:border-sky-500 leading-relaxed"></textarea>
+          <label class="block text-gray-700 font-bold mb-1">历史背景 / 考据笔记</label>
+          <textarea id="note" rows="2" placeholder="如：2019开市特惠赠品，附赠家具码..." 
+                    class="w-full bg-white border border-gray-300 rounded-xl p-2 text-gray-900 focus:outline-none focus:border-sky-500 leading-relaxed"></textarea>
         </div>
 
         <!-- 提交按钮 -->
@@ -277,8 +284,8 @@
       </form>
     </main>
 
-    <!-- ================= 右侧栏：全库历史谷物速查参考滚栏 ================= -->
-    <aside class="w-full lg:w-5/12 bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] shadow-xs">
+    <!-- ================= 右侧栏：全库历史谷物速查参考 (移动端受Tab控制，PC端常驻右侧) ================= -->
+    <aside id="section-ref" class="hidden lg:flex w-full lg:w-5/12 bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 flex-col gap-3.5 lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] shadow-xs">
       
       <div class="space-y-2.5 pb-2 border-b border-gray-100">
         <div class="flex items-center justify-between">
@@ -296,14 +303,14 @@
             type="text" 
             id="ref-search-input" 
             oninput="filterRefList(this.value)" 
-            placeholder="速查：搜干员/周边名/系列，看看以前出过啥..." 
+            placeholder="速查：搜干员/周边名/企划..." 
             class="w-full bg-gray-50 border border-gray-200 focus:border-sky-500 rounded-xl pl-9 pr-8 py-2 text-xs text-gray-900 outline-none"
           >
           <button id="ref-clear-btn" onclick="clearRefSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-0.5">
             <i data-lucide="x" class="w-3.5 h-3.5"></i>
           </button>
         </div>
-        <p class="text-[11px] text-gray-400">点击卡片可直接调出编辑/补图，或点击“引用名”复制名称。</p>
+        <p class="text-[11px] text-gray-400">点击卡片可直接调出编辑/补图，或点击“引用企划”复用上新档期。</p>
       </div>
 
       <div id="ref-list-container" class="flex-1 overflow-y-auto space-y-2.5 pr-1 text-xs">
@@ -326,6 +333,27 @@
     let uploadedImageList = []; 
     let cachedGoodsList = [];
 
+    // 📱 移动端 Tab 视图切换
+    window.switchMobileView = function(view) {
+      const formSec = document.getElementById('section-form');
+      const refSec = document.getElementById('section-ref');
+      const tabForm = document.getElementById('tab-btn-form');
+      const tabRef = document.getElementById('tab-btn-ref');
+
+      if (view === 'form') {
+        formSec.classList.remove('hidden');
+        refSec.classList.add('hidden');
+        tabForm.className = 'py-2 rounded-lg bg-white text-sky-700 shadow-xs transition-all flex items-center justify-center gap-1.5 font-bold';
+        tabRef.className = 'py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center justify-center gap-1.5 font-normal';
+      } else {
+        formSec.classList.add('hidden');
+        refSec.classList.remove('hidden');
+        refSec.classList.add('flex');
+        tabRef.className = 'py-2 rounded-lg bg-white text-sky-700 shadow-xs transition-all flex items-center justify-center gap-1.5 font-bold';
+        tabForm.className = 'py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center justify-center gap-1.5 font-normal';
+      }
+    };
+
     function parseImg(item) {
       if (!item) return { url: '', tag: '' };
       if (typeof item === 'string') {
@@ -347,15 +375,78 @@
 
     function setVal(id, text) { document.getElementById(id).value = text; }
     
-    function setSeriesLineVal(val) {
-      document.getElementById('series_line').value = val;
-      document.querySelectorAll('#series-line-chips .btn-chip').forEach(btn => {
-        if (btn.innerText === val || (val === '独立单品' && btn.innerText.includes('独立单品'))) {
-          btn.className = 'btn-chip active';
-        } else {
-          btn.className = 'btn-chip';
+    function refreshSeriesDropdownOptions(list) {
+      const select = document.getElementById('series_line_select');
+      const curSelected = select.value;
+      
+      const set = new Set();
+      list.forEach(item => {
+        if (item.series_line && item.series_line !== '独立单品') {
+          set.add(item.series_line.trim());
         }
       });
+
+      const seriesArr = Array.from(set).filter(Boolean);
+      
+      let html = `<option value="独立单品">独立单品</option>`;
+      seriesArr.forEach(s => {
+        html += `<option value="${s}">${s}</option>`;
+      });
+      html += `<option value="__NEW__">+ 录入新系列名称...</option>`;
+      
+      select.innerHTML = html;
+      
+      if (seriesArr.includes(curSelected) || curSelected === '独立单品') {
+        select.value = curSelected;
+      }
+    }
+
+    window.handleSeriesSelectChange = function(val) {
+      const customInput = document.getElementById('series_line_custom');
+      if (val === '__NEW__') {
+        customInput.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      }
+    };
+
+    function getSeriesLineValue() {
+      const select = document.getElementById('series_line_select');
+      if (select.value === '__NEW__') {
+        const custom = document.getElementById('series_line_custom').value.trim();
+        return custom || '独立单品';
+      }
+      return select.value || '独立单品';
+    }
+
+    function setSeriesLineVal(val) {
+      const select = document.getElementById('series_line_select');
+      const customInput = document.getElementById('series_line_custom');
+      val = (val || '独立单品').trim();
+
+      let optionExists = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === val) {
+          optionExists = true;
+          break;
+        }
+      }
+
+      if (optionExists) {
+        select.value = val;
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      } else {
+        const newOpt = document.createElement('option');
+        newOpt.value = val;
+        newOpt.text = val;
+        select.insertBefore(newOpt, select.querySelector('option[value="__NEW__"]'));
+        select.value = val;
+        customInput.classList.add('hidden');
+        customInput.value = '';
+      }
     }
 
     function appendOp(name) {
@@ -365,7 +456,6 @@
       syncOpListToImageTags();
     }
 
-    // 🌟 复刻行添加（带非空安全检查，防止找不到 tip 报错）
     window.addReprintRow = function(data = {}) {
       const tip = document.getElementById('no-reprint-tip');
       if (tip) tip.classList.add('hidden');
@@ -375,21 +465,21 @@
 
       const div = document.createElement('div');
       div.id = rowId;
-      div.className = "bg-white border border-amber-200 p-3 rounded-xl space-y-2 text-xs shadow-2xs";
+      div.className = "bg-white border border-amber-200 p-2.5 sm:p-3 rounded-xl space-y-2 text-xs shadow-2xs";
       div.innerHTML = `
         <div class="flex items-center justify-between">
-          <input type="text" placeholder="复刻标记 (如: 第1次再版 / 嘉年华现场复刻)" value="${data.tag || '复刻再版'}" class="rp-tag bg-transparent border-b border-amber-300 text-amber-800 font-bold text-xs outline-none px-1 py-0.5 w-1/2">
+          <input type="text" placeholder="复刻标记 (如: 第1次再版)" value="${data.tag || '复刻再版'}" class="rp-tag bg-transparent border-b border-amber-300 text-amber-800 font-bold text-xs outline-none px-1 py-0.5 w-1/2">
           <button type="button" onclick="removeReprintRow('${rowId}')" class="text-rose-600 hover:text-rose-700 text-xs font-semibold">
             ✕ 删除
           </button>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" placeholder="复刻企划/档期 (如: 2021感谢庆典)" value="${data.series || ''}" class="rp-series bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-gray-900 outline-none">
+          <input type="text" placeholder="企划/档期" value="${data.series || ''}" class="rp-series bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-gray-900 outline-none">
           <input type="date" value="${data.date || ''}" class="rp-date bg-gray-50 border border-gray-200 rounded-lg px-1.5 py-1 text-gray-900 outline-none font-mono">
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <input type="text" placeholder="复刻时售价 (如: 35 / 涨价)" value="${data.price || ''}" class="rp-price bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-amber-600 font-bold outline-none">
-          <input type="text" placeholder="渠道 (如: 线上通贩 / 线下场贩)" value="${data.channel || '线上购入'}" class="rp-channel bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-gray-900 outline-none">
+          <input type="text" placeholder="价格 (如: 35)" value="${data.price || ''}" class="rp-price bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-amber-600 font-bold outline-none">
+          <input type="text" placeholder="渠道 (如: 线上通贩)" value="${data.channel || '线上购入'}" class="rp-channel bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-gray-900 outline-none">
         </div>
       `;
       container.appendChild(div);
@@ -436,6 +526,9 @@
         if (error) throw error;
         cachedGoodsList = data || [];
         document.getElementById('ref-total-badge').innerText = cachedGoodsList.length;
+        document.getElementById('mobile-ref-count').innerText = cachedGoodsList.length;
+        
+        refreshSeriesDropdownOptions(cachedGoodsList);
         renderRefList(cachedGoodsList);
       } catch (err) {
         container.innerHTML = `<div class="text-center py-12 text-rose-500 text-xs font-mono">加载失败: ${err.message}</div>`;
@@ -462,22 +555,23 @@
           try { rpList = JSON.parse(rpList); } catch(e){ rpList = []; }
         }
         const rpCount = (rpList && Array.isArray(rpList)) ? rpList.length : 0;
-        
+        const safeSeries = (g.series || '').replace(/'/g, "\\'");
+
         return `
-          <div class="ref-card ${isCurrent ? 'active' : ''} p-3 rounded-xl flex items-center justify-between gap-3 Antigravity-pointer" onclick="loadItemToForm('${g.id}')">
-            <div class="w-12 h-12 rounded-lg bg-gray-50 shrink-0 overflow-hidden border border-gray-200">
+          <div class="ref-card ${isCurrent ? 'active' : ''} p-2.5 sm:p-3 rounded-xl flex items-center justify-between gap-2.5 sm:gap-3 cursor-pointer" onclick="loadItemToForm('${g.id}')">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg bg-gray-50 shrink-0 overflow-hidden border border-gray-200">
               <img src="${cover}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/80x80/f3f4f6/9ca3af?text=无图'">
             </div>
 
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5 mb-1">
+              <div class="flex items-center gap-1.5 mb-0.5 sm:mb-1">
                 <span class="text-xs text-sky-700 font-bold font-mono">${g.release_date || '早期'}</span>
                 <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.2 rounded font-medium border border-gray-200">${g.category || '谷子'}</span>
-                ${rpCount > 0 ? `<span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1 rounded font-semibold">再版×${rpCount}</span>` : ''}
-                <span class="text-xs text-amber-600 font-bold ml-auto truncate max-w-[120px] text-right">${g.price || ''}</span>
+                ${rpCount > 0 ? `<span class="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1 rounded font-semibold">再版×${rpCount}</span>` : ''}
+                <span class="text-xs text-amber-600 font-bold ml-auto truncate max-w-[90px] sm:max-w-[120px] text-right">${g.price || ''}</span>
               </div>
               <h4 class="text-xs font-bold text-gray-900 truncate leading-snug" title="${g.title}">${g.title}</h4>
-              <div class="flex items-center gap-1.5 text-[11px] text-gray-500 truncate mt-0.5">
+              <div class="flex items-center gap-1 text-[11px] text-gray-500 truncate mt-0.5">
                 <span class="text-sky-800 font-medium">${g.series_line || '独立单品'}</span>
                 <span>·</span>
                 <span class="truncate">${g.series || '官方企划'}</span>
@@ -485,11 +579,11 @@
             </div>
 
             <div class="flex flex-col gap-1 shrink-0" onclick="event.stopPropagation()">
-              <button type="button" onclick="loadItemToForm('${g.id}')" class="text-xs px-2.5 py-1 rounded-md bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition-colors font-medium">
-                修改/补图
+              <button type="button" onclick="loadItemToForm('${g.id}')" class="text-xs px-2 sm:px-2.5 py-1 rounded-md bg-sky-50 active:bg-sky-100 text-sky-700 border border-sky-200 font-semibold">
+                修改
               </button>
-              <button type="button" onclick="copyGoodsName(event, '${g.title}')" class="text-[11px] px-2 py-0.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 transition-colors">
-                引用名
+              <button type="button" onclick="copySeriesName(event, '${safeSeries}')" class="text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-md bg-gray-100 active:bg-gray-200 text-gray-600 border border-gray-200">
+                引用企划
               </button>
             </div>
           </div>
@@ -521,15 +615,14 @@
       filterRefList('');
     };
 
-    // 🌟【已彻底修复 Null 崩溃的 loadItemToForm】
     window.loadItemToForm = function(id) {
       const item = cachedGoodsList.find(x => String(x.id) === String(id));
       if (!item) return;
 
       currentEditingId = item.id;
       
-      document.getElementById('form-mode-badge').innerText = '模式: 修改已有档案 / 补图';
-      document.getElementById('form-mode-badge').className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-600 text-white';
+      document.getElementById('form-mode-badge').innerText = '模式: 修改档案 / 补图';
+      document.getElementById('form-mode-badge').className = 'px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-amber-600 text-white shrink-0';
       document.getElementById('current-editing-hint').innerText = `正在修改: [${item.title}]`;
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
       document.getElementById('submit-btn').innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> 保存档案修改与补图';
@@ -540,7 +633,6 @@
       document.getElementById('release_date').value = item.release_date || '2019-05-25';
       document.getElementById('price').value = item.price || '';
       
-      // 容错处理 operators
       if (Array.isArray(item.operators)) {
         document.getElementById('operators').value = item.operators.join(', ');
       } else if (typeof item.operators === 'string') {
@@ -554,9 +646,8 @@
       document.getElementById('is_limited').checked = !!item.is_limited;
       document.getElementById('note').value = item.note || '';
 
-      setSeriesLineVal(item.series_line || '独立单品');
+      setSeriesLineVal(item.series_line);
 
-      // 🌟【核心修复点】：安全重建复刻 DOM，绝不再触发 classList of null
       const rpContainer = document.getElementById('reprint-rows-container');
       let reprintList = item.reprint_history;
       if (typeof reprintList === 'string') {
@@ -569,7 +660,6 @@
         rpContainer.innerHTML = '<div id="no-reprint-tip" class="text-[11px] text-amber-700 py-1 text-center font-mono">暂无复刻记录 (独家/未再版商品留空即可)</div>';
       }
 
-      // 提取图片（确保能一路执行到这里，不再崩溃）
       uploadedImageList = [];
       let rawImgs = [];
 
@@ -608,19 +698,30 @@
       renderRefList(cachedGoodsList);
       lucide.createIcons();
 
+      // 手机端自动切回录入表单并滚动
+      if (window.innerWidth < 1024) {
+        switchMobileView('form');
+      }
       document.getElementById('entry-form').scrollIntoView({ behavior: 'smooth' });
     };
 
-    window.copyGoodsName = function(e, title) {
+    window.copySeriesName = function(e, series) {
       e.stopPropagation();
-      document.getElementById('title').value = title;
-      alert(`已将周边名称引用至表单：${title}`);
+      if (!series) {
+        alert('该条目未登记企划名称');
+        return;
+      }
+      document.getElementById('series').value = series;
+      if (window.innerWidth < 1024) {
+        switchMobileView('form');
+      }
+      document.getElementById('series').focus();
     };
 
     window.switchToCreateMode = function() {
       currentEditingId = null;
       document.getElementById('form-mode-badge').innerText = '模式: 录入新周边';
-      document.getElementById('form-mode-badge').className = 'px-3 py-1 rounded-full text-xs font-bold bg-sky-600 text-white';
+      document.getElementById('form-mode-badge').className = 'px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-sky-600 text-white shrink-0';
       document.getElementById('current-editing-hint').innerText = '';
       document.getElementById('btn-cancel-edit').classList.add('hidden');
       document.getElementById('submit-btn').innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> 确认并录入新周边';
@@ -638,7 +739,7 @@
       const files = Array.from(e.target.files);
       if (!files.length) return;
 
-      uploadHint.textContent = `⏳ 正在上传 ${files.length} 张图片到图床...`;
+      uploadHint.textContent = `⏳ 正在上传 ${files.length} 张图...`;
 
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
@@ -656,7 +757,7 @@
             });
           }
         } catch (err) {
-          console.error('单张上传失败', err);
+          console.error('上传失败', err);
         }
       }
 
@@ -665,6 +766,7 @@
       fileInput.value = '';
     });
 
+    // 🌟 移动端与PC统一的自适应渲染
     function renderPreview() {
       if (uploadedImageList.length > 0) {
         previewGrid.classList.remove('hidden');
@@ -678,20 +780,21 @@
       previewGrid.innerHTML = uploadedImageList.map((rawItem, idx) => {
         const item = parseImg(rawItem);
         return `
-          <div class="relative bg-white rounded-xl border ${idx===0 ? 'border-sky-500 ring-2 ring-sky-200' : 'border-gray-300'} p-2 flex flex-col gap-2 shadow-xs">
+          <!-- 移动端 w-36 紧凑横滑，PC 端 w-auto 自然排列 -->
+          <div class="shrink-0 w-36 sm:w-auto snap-start relative bg-white rounded-xl border ${idx===0 ? 'border-sky-500 ring-2 ring-sky-200' : 'border-gray-300'} p-1.5 sm:p-2 flex flex-col gap-1.5 shadow-xs">
             <div class="relative aspect-square w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
               <img src="${item.url}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/f3f4f6/9ca3af?text=加载中'">
-              ${idx===0 ? '<span class="absolute top-1 left-1 bg-sky-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow">主封面</span>' : ''}
-              <button type="button" onclick="removeImg(${idx})" class="absolute top-1 right-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow hover:scale-110 transition">✕</button>
+              ${idx===0 ? '<span class="absolute top-1 left-1 bg-sky-600 text-white text-[9px] font-bold px-1 rounded shadow">主封面</span>' : ''}
+              <button type="button" onclick="removeImg(${idx})" class="absolute top-1 right-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow">✕</button>
             </div>
             
-            <div class="flex flex-col gap-1.5">
-              <input type="text" value="${item.tag || ''}" oninput="updateImgTag(${idx}, this.value)" placeholder="绑定干员名(如:陈)" class="w-full bg-gray-50 border border-gray-200 focus:border-sky-500 rounded-md px-2 py-1 text-xs text-gray-800 outline-none">
+            <div class="flex flex-col gap-1">
+              <input type="text" value="${item.tag || ''}" oninput="updateImgTag(${idx}, this.value)" placeholder="单品Tag(如:陈)" class="w-full bg-gray-50 border border-gray-200 focus:border-sky-500 rounded px-1.5 py-0.5 text-[11px] text-gray-800 outline-none">
               
               ${curOps.length > 0 ? `
                 <div class="flex gap-1 overflow-x-auto no-scrollbar py-0.5">
                   ${curOps.map(op => `
-                    <button type="button" onclick="quickSetImgTag(${idx}, '${op}')" class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 hover:bg-sky-100 hover:text-sky-700 text-gray-600 shrink-0 border border-gray-200 transition">
+                    <button type="button" onclick="quickSetImgTag(${idx}, '${op}')" class="text-[9px] px-1 py-0.2 rounded bg-gray-100 hover:bg-sky-100 hover:text-sky-700 text-gray-600 shrink-0 border border-gray-200">
                       +${op}
                     </button>
                   `).join('')}
@@ -742,14 +845,18 @@
       document.getElementById('obtain_type').value = '线上购入';
       document.getElementById('is_limited').checked = false;
       document.getElementById('note').value = '';
-      setSeriesLineVal('独立单品');
+      
+      document.getElementById('series_line_select').value = '独立单品';
+      document.getElementById('series_line_custom').value = '';
+      document.getElementById('series_line_custom').classList.add('hidden');
+
       uploadedImageList = [];
       renderPreview();
       
       document.getElementById('reprint-rows-container').innerHTML = `
         <div id="no-reprint-tip" class="text-[11px] text-amber-700 py-1 text-center font-mono">暂无复刻记录 (独家/未再版商品留空即可)</div>
       `;
-      uploadHint.textContent = '点击拍照或上传图片 (自动传至 ImgBB，支持多选)';
+      uploadHint.textContent = '拍照或选图 (传至 ImgBB，支持多选)';
     }
 
     const form = document.getElementById('entry-form');
@@ -771,7 +878,7 @@
       const payload = {
         title: document.getElementById('title').value.trim(),
         series: document.getElementById('series').value.trim(),
-        series_line: document.getElementById('series_line').value.trim() || '独立单品',
+        series_line: getSeriesLineValue(),
         category: document.getElementById('category').value,
         release_date: releaseDate,
         year: parsedYear,
